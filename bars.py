@@ -39,8 +39,8 @@ def get_closest_bar(bars_list, longitude, latitude):
 
 def get_formatted_bar_info(bar):
     return 'это {}, расположенный по адресу: {}'.format(
-        bar.get('properties').get('Attributes').get('Name'),
-        bar.get('properties').get('Attributes').get('Address')
+        bar['properties']['Attributes']['Name'],
+        bar['properties']['Attributes']['Address']
         )
 
 
@@ -61,15 +61,16 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
     if not args.longtitude or not args.latitude or not args.filepath:
-        print("Please enter your gps coordinates, and path to file, for more info use --help")
-        sys.exit(1)
-    if not is_file(args.filepath):
-        print("Invalid file")
-        sys.exit(1)
-    list_of_bars = load_data(args.filepath).get('features')
-    if not list_of_bars:
-        print('Unsupported type of bar storage, pleae check file')
-        sys.exit(1)
+        sys.exit(
+            "Please enter your gps coordinates, and path to file, "
+            "for more info use --help"
+        )
+    if not os.path.isfile(args.filepath):
+        sys.exit("Invalid file")
+    bars_json_data = load_data(args.filepath)
+    if not bars_json_data:
+        sys.exit("Unsupported type of bar storage, pleae check file")
+    list_of_bars = bars_json_data.get('features')
     biggest_bar = get_biggest_bar(list_of_bars)
     print(
         'Самый большой бар {}'.format(
