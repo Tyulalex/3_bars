@@ -14,79 +14,60 @@ def load_data(input_file):
 
 
 def get_biggest_bar(bars_list):
-    return max(
-        bars_list, key=lambda x: x['properties']['Attributes']['SeatsCount']
-    )
+    return max(bars_list,
+               key=lambda x: x['properties']['Attributes']['SeatsCount'])
 
 
 def get_smallest_bar(bars_list):
-    return min(
-        filter(
-            lambda x: x['properties']['Attributes']['SeatsCount'] != 0,
-            bars_list
-        ), key=lambda x: x['properties']['Attributes']['SeatsCount']
-    )
+    bars_list_with_seats = filter(
+        lambda x: x['properties']['Attributes']['SeatsCount'] != 0,
+        bars_list)
+    return min(bars_list_with_seats,
+               key=lambda x: x['properties']['Attributes']['SeatsCount'])
 
 
 def get_closest_bar(bars_list, longitude, latitude):
-    return min(
-        bars_list,
-        key=lambda bar: great_circle(
-            (longitude, latitude), (bar['geometry']['coordinates'])
-        ).meters
-    )
+    return min(bars_list,
+               key=lambda bar: great_circle(
+                   (longitude, latitude),
+                   (bar['geometry']['coordinates'])).meters)
 
 
 def get_formatted_bar_info(bar):
-    return 'это {}, расположенный по адресу: {}'.format(
-        bar['properties']['Attributes']['Name'],
-        bar['properties']['Attributes']['Address']
-        )
+    bar_name = bar['properties']['Attributes']['Name']
+    bar_address = bar['properties']['Attributes']['Address']
+    return 'это {}, расположенный по адресу: {}'.format(bar_name,
+                                                        bar_address)
 
 
-def is_file(raw_file):
-    return os.path.isfile(raw_file)
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--filepath',
+                        help="Input file for bars json data (Full path)",
+                        required=True)
+    parser.add_argument('--longtitude', help="Longtitude coordinate",
+                        type=float, required=True)
+    parser.add_argument('--latitude', help="latitude coordinate",
+                        type=float, required=True)
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--filepath', help="Input file for bars json data (Full path)"
-    )
-    parser.add_argument(
-        '--longtitude', help="Longtitude coordinate"
-    )
-    parser.add_argument(
-        '--latitude', help="latitude coordinate"
-    )
-    args = parser.parse_args()
-    if not args.longtitude or not args.latitude or not args.filepath:
-        sys.exit(
-            "Please enter your gps coordinates, and path to file, "
-            "for more info use --help"
-        )
-    if not os.path.isfile(args.filepath):
-        sys.exit("Invalid file")
-    bars_json_data = load_data(args.filepath)
-    if not bars_json_data:
-        sys.exit("Unsupported type of bar storage, pleae check file")
-    list_of_bars = bars_json_data.get('features')
-    biggest_bar = get_biggest_bar(list_of_bars)
-    print(
-        'Самый большой бар {}'.format(
-            get_formatted_bar_info(biggest_bar)
-        )
-     )
-    smallest_bar = get_smallest_bar(list_of_bars)
-    print(
-        'Самый маленький бар {}'.format(
-            get_formatted_bar_info(smallest_bar)
-        )
-    )
-    jps_coordinates = (float(args.longtitude), float(args.latitude))
-    closest_bar = get_closest_bar(list_of_bars, *jps_coordinates)
-    print(
-        'Ближайший бар {}'.format(
-            get_formatted_bar_info(closest_bar)
-        )
-    )
+    args = parse_arguments()
+    bars_json_data = None
+    if os.path.isfile(args.filepath):
+        bars_json_data = load_data(args.filepath)
+    if bars_json_data:
+        list_of_bars = bars_json_data.get('features')
+        biggest_bar = get_biggest_bar(list_of_bars)
+        print('Самый большой бар {}'.format(
+            get_formatted_bar_info(biggest_bar)))
+        smallest_bar = get_smallest_bar(list_of_bars)
+        print('Самый маленький бар {}'.format(
+            get_formatted_bar_info(smallest_bar)))
+        jps_coordinates = (args.longtitude, args.latitude)
+        closest_bar = get_closest_bar(list_of_bars, *jps_coordinates)
+        print('Ближайший бар {}'.format(
+            get_formatted_bar_info(closest_bar)))
+    else:
+        print("Ничего не найдено, проверьте файл")
