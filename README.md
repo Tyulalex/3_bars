@@ -10,7 +10,7 @@
 
 Запуск на Linux:
 
-```#!bash
+```
 
 $ python bars.py --filepath=bars.json --longtitude=37.454 --latitude=50.0453# possibly requires call of python3 executive instead of just python
 

@@ -1,6 +1,5 @@
 import json
 import os
-import sys
 import argparse
 from geopy.distance import great_circle
 
@@ -54,7 +53,6 @@ def parse_arguments():
 
 if __name__ == '__main__':
     args = parse_arguments()
-    bars_json_data = None
     if os.path.isfile(args.filepath):
         bars_json_data = load_data(args.filepath)
     if bars_json_data:
